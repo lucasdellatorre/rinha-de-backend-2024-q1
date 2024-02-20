@@ -40,18 +40,58 @@ func (c *clientesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	json.Unmarshal([]byte(body), &cliente)
 
+	result, err := c.store.Exec("INSERT INTO clientes (name, limite) VALUES (?, ?)", cliente.Descricao, cliente.Valor)
+
+	if err != nil {
+		fmt.Println("error while inserting")
+		return
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		fmt.Println("Erro pegando o id")
+		return
+	}
+
+	fmt.Println("novo id: ", id)
+
 	fmt.Println(cliente)
 }
 
 func main() {
-	connStr := "user=admin password=123 dbname=rinha"
+	connStr := "postgres://admin:123@db:5432/rinha"
 
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal(err)
+	var db *sql.DB
+	var err error
+
+	// Retry connecting to the database with exponential backoff
+	retries := 0
+	maxRetries := 5
+	for db == nil {
+		db, err = sql.Open("postgres", connStr)
+		if err != nil {
+			retries++
+			if retries >= maxRetries {
+				log.Fatal("Failed to connect to the database after maximum retries")
+			}
+			fmt.Printf("Failed to connect to the database (attempt %d/%d). Retrying in 5 seconds...\n", retries, maxRetries)
+			time.Sleep(3 * time.Second)
+		}
 	}
 
 	defer db.Close()
+
+	// Check if the database is ready by pinging it
+	for {
+		if err := db.Ping(); err != nil {
+			fmt.Println("Error pinging the database. Retrying in 5 seconds...")
+			time.Sleep(3 * time.Second)
+		} else {
+			break
+		}
+	}
+
+	fmt.Println("DB Connected!")
 
 	mux := http.NewServeMux()
 
