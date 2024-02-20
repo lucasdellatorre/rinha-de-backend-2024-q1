@@ -1,13 +1,23 @@
 CREATE TABLE clientes (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    limite INTEGER NOT NULL
+    cliente_id SERIAL PRIMARY KEY,
+    limite INTEGER NOT NULL,
+    saldo INTEGER NOT NULL
 );
 
-INSERT INTO clientes (nome, limite)
+CREATE TABLE transacoes (
+    id SERIAL PRIMARY KEY,
+    valor INTEGER NOT NULL,
+    tipo CHAR(1) NOT NULL,
+    descricao VARCHAR(10) NOT NULL,
+    realizada_em timestamptz NOT NULL DEFAULT (now()),
+    FOREIGN KEY (cliente_id) REFERENCES clientes (cliente_id)
+);
+
+ALTER TABLE transacoes
+INSERT INTO clientes (limite, saldo)
 VALUES
-    ('o barato sai caro', 1000 * 100),
-    ('zan corp ltda', 800 * 100),
-    ('les cruders', 10000 * 100),
-    ('padaria joia de cocaia', 100000 * 100),
-    ('kid mais', 5000 * 100);
+    (100000, 0),
+    (80000, 0),
+    (1000000, 0),
+    (10000000, 0),
+    (500000, 0);
