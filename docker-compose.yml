@@ -4,7 +4,9 @@ services:
   api01: &api
     # Lembre-se de que seu serviço HTTP deve estar hospedado num repositório
     # publicamente acessível! Ex.: hub.docker.com
-    image: ana/minha-api-matadora:latest
+    #image: ana/minha-api-matadora:latest # fazer isso somente quando publicar
+    build:
+      dockerfile: ./Dockerfile
     hostname: api01
     environment:
       - DB_HOSTNAME=db

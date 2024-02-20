@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 type Cliente struct {
@@ -18,7 +21,9 @@ type Cliente struct {
 	Descricao string `json:"descricao"`
 }
 
-type clientesHandler struct{}
+type clientesHandler struct {
+	store *sql.DB
+}
 
 func (c *clientesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	clientId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[2])
@@ -39,6 +44,15 @@ func (c *clientesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	connStr := "user=admin password=123 dbname=rinha"
+
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+
 	mux := http.NewServeMux()
 
 	s := &http.Server{
@@ -49,7 +63,9 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	mux.Handle("/clientes/", &clientesHandler{})
+	mux.Handle("/clientes/", &clientesHandler{
+		store: db,
+	})
 
 	fmt.Println("Server is running...")
 	log.Fatal(s.ListenAndServe())
