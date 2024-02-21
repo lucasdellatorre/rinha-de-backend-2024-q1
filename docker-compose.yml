@@ -52,6 +52,7 @@ services:
   db:
     image: postgres:latest
     hostname: db
+    restart: always
     environment:
       - POSTGRES_PASSWORD=123
       - POSTGRES_USER=admin
