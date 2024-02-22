@@ -9,7 +9,7 @@ CREATE TABLE transacoes (
     valor INTEGER NOT NULL,
     tipo CHAR(1) NOT NULL,
     descricao VARCHAR(10) NOT NULL,
-    realizada_em timestamptz NOT NULL DEFAULT (now()),
+    realizada_em TIMESTAMP WITH TIME ZONE
     cliente_id INTEGER NOT NULL
 );
 
